@@ -4,8 +4,8 @@ import {
   timestamp,
   uniqueIndex,
   index,
+  boolean
 } from 'drizzle-orm/pg-core';
-
 import { usersTable } from './user-schema.js';
 import { pollsTable } from './polls-schema.js';
 
@@ -17,8 +17,9 @@ export const responsesTable = pgTable(
     respondentId: uuid('respondent_id')
       .references(() => usersTable.id, {
         onDelete: 'cascade',
-      })
-      .notNull(),
+      }),
+
+    isAnonymous: boolean('is_anonymous').default(false).notNull(),
 
     pollId: uuid('poll_id')
       .references(() => pollsTable.id, {

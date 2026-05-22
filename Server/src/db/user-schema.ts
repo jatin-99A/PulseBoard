@@ -1,4 +1,3 @@
-import { sql } from 'drizzle-orm';
 import {
   pgTable,
   uuid,
@@ -19,14 +18,7 @@ export const usersTable = pgTable(
     email: varchar('email', { length: 322 }).notNull().unique(),
     emailVerified: boolean('email_verified').default(false).notNull(),
 
-    emailVerificationExpires: timestamp('email_verification_expires').default(
-      sql`now() + interval '1 day'`
-    ),
-
     password: varchar('password', { length: 66 }),
-
-    refreshToken: varchar('refresh_token', { length: 128 }),
-    refreshTokenExpiresAt: timestamp('refresh_token_expires_at'),
 
     createdAt: timestamp('created_at').defaultNow().notNull(),
 
@@ -35,5 +27,5 @@ export const usersTable = pgTable(
       .$onUpdate(() => new Date()),
   },
 
-  (table) => [index('refresh_token_idx').on(table.refreshToken)]
+  (table) => [index('users_email_idx').on(table.email)]
 );

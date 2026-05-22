@@ -7,7 +7,6 @@ import {
   timestamp,
   index,
 } from 'drizzle-orm/pg-core';
-
 import { usersTable } from './user-schema.js';
 
 export const pollsTable = pgTable(
@@ -32,6 +31,8 @@ export const pollsTable = pgTable(
     expiresAt: timestamp('expires_at').notNull(),
 
     isActive: boolean('is_active').default(true).notNull(),
+
+    isAnonymousAllowed: boolean('is_anonymous_allowed').default(false).notNull(),
 
     createdAt: timestamp('created_at').defaultNow().notNull(),
 

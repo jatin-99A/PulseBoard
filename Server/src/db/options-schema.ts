@@ -1,5 +1,4 @@
 import { pgTable, uuid, varchar, integer, index } from 'drizzle-orm/pg-core';
-
 import { questionsTable } from './questions-schema.js';
 
 export const optionsTable = pgTable(

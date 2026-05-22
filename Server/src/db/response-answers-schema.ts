@@ -1,5 +1,4 @@
 import { pgTable, uuid, index } from 'drizzle-orm/pg-core';
-
 import { responsesTable } from './responses-schema.js';
 import { questionsTable } from './questions-schema.js';
 import { optionsTable } from './options-schema.js';

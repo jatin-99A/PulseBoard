@@ -1,0 +1,76 @@
+version: "3.9"
+
+services:
+  valkey:
+    image: valkey/valkey:8.0-alpine
+    container_name: valkey
+
+    restart: unless-stopped
+
+    ports:
+      - "6379:6379"
+
+    command:
+      [
+        "valkey-server",
+        "--requirepass", "jswstrongpasswordyoyo",
+        "--appendonly", "yes",
+        "--appendfsync", "everysec",
+        "--save", "60", "1000",
+        "--maxmemory", "256mb",
+        "--maxmemory-policy", "allkeys-lru",
+        "--tcp-keepalive", "300"
+      ]
+
+    volumes:
+      - valkey_data:/data
+
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+        reservations:
+          memory: 128M
+
+    networks:
+      - internal_net
+
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+
+    restart: unless-stopped
+
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin123
+
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+        reservations:
+          memory: 256M
+
+    networks:
+      - internal_net
+
+
+networks:
+  internal_net:
+    driver: bridge
+
+
+volumes:
+  valkey_data:
+  rabbitmq_data:

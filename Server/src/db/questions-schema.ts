@@ -5,8 +5,8 @@ import {
   integer,
   timestamp,
   index,
+  boolean
 } from 'drizzle-orm/pg-core';
-
 import { pollsTable } from './polls-schema.js';
 
 export const questionsTable = pgTable(
@@ -23,6 +23,8 @@ export const questionsTable = pgTable(
     questionText: varchar('question_text', {
       length: 500,
     }).notNull(),
+
+    isMandatory: boolean('is_mandatory').default(false).notNull(),
 
     questionOrder: integer('question_order').default(1).notNull(),
 
