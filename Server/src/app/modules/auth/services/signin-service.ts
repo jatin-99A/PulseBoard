@@ -28,7 +28,12 @@ const signinService = async (data: {
 
     const existingUser = user[0];
 
-    // 2. check password
+    // 2. check if email is verified
+    if (!existingUser.emailVerified) {
+        // throw ApiError.forbidden("Please verify your email before signing in");
+    }
+
+    // 3. check password if it matches
     const isMatch = await bcrypt.compare(
         password,
         existingUser.password!
@@ -38,7 +43,7 @@ const signinService = async (data: {
         throw ApiError.unauthorized("Invalid credentials");
     }
 
-    // 3. generate access token
+    // 4. generate access token
     const accessToken = TokenService.generatePayloadToken({
         id: existingUser.id,
     }, env.JWT_EXPIRES_IN as JWT.SignOptions['expiresIn'] || '15m');
@@ -47,7 +52,7 @@ const signinService = async (data: {
         throw ApiError.internalError();
     }
 
-    // 4. generate refresh token
+    // 5. generate refresh token
     const token = await TokenService.generateRefreshToken();
 
     if (!token) {

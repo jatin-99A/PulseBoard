@@ -1,0 +1,3 @@
+const createPoll = (data: any) => {
+    
+}

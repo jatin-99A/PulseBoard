@@ -6,17 +6,17 @@ interface ValidationReturnType {
 }
 
 export default class DtoBase {
-  static schema: ZodType<any> = z.object({});
+  static schema: ZodType<unknown> = z.object({});
 
   static validate<T>(
-    this: { schema: ZodType<any> },
+    this: { schema: ZodType<unknown> },
     data: unknown
   ): ValidationReturnType {
     const result = this.schema.safeParse(data);
 
     if (!result.success) {
       return {
-        error: result.error.issues.map((e) => e.message).join(','),
+        error: result.error.issues.map((e) => e.message).join(', '),
         data: null,
       };
     }

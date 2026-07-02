@@ -16,7 +16,7 @@ export const optionsTable = pgTable(
       length: 255,
     }).notNull(),
 
-    optionOrder: integer('option_order').default(1).notNull(),
+    optionOrder: integer('option_order').notNull(),
   },
 
   (table) => [index('option_question_idx').on(table.questionId)]

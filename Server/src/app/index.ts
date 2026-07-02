@@ -1,8 +1,9 @@
 import express from 'express';
-
 import errorHandlerMiddleware from '../common/middlewares/error-handler-middleware.js';
 import authMiddleware from '../common/middlewares/auth-middleware.js';
 import { catchAsync } from '../common/utils/catch-async-error.js';
+import authRoutes from './modules/auth/auth-routes.js';
+import cookieParser from "cookie-parser";
 
 // Extend Express Request interface to include user property
 declare global {
@@ -22,6 +23,7 @@ export function setupApp() {
 
   // Body parser
   app.use(express.json());
+  app.use(cookieParser());
 
   // Middlewares
   app.use(express.json());
@@ -31,6 +33,8 @@ export function setupApp() {
   app.get('/', (req, res) => {
     res.status(200).json({ status: 'OK', message: 'Server is running' });
   });
+
+  app.use('/api/v1/auth', authRoutes);
 
   // Default
   app.use((req, res) => {

@@ -16,7 +16,7 @@ router.post(
 );
 
 router.post(
-    "/login",
+    "/signin",
      validate(SigninDto), catchAsync(authenticationController.handleSignin.bind(authenticationController))
 );
 

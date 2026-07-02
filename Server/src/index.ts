@@ -3,6 +3,9 @@ import { setupApp } from './app/index.js';
 import env from './config/env.js';
 import { testDbConnection } from './db/index.js';
 
+// workers
+import './workers/cleanup-job.js';
+
 async function startServer() {
   try {
     const PORT = env.PORT;

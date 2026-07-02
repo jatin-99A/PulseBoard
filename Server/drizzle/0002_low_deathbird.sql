@@ -1,0 +1,1 @@
+ALTER TABLE "options" ALTER COLUMN "option_order" DROP DEFAULT;

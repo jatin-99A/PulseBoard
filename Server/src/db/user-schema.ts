@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import {
   pgTable,
   uuid,
@@ -17,6 +18,7 @@ export const usersTable = pgTable(
 
     email: varchar('email', { length: 322 }).notNull().unique(),
     emailVerified: boolean('email_verified').default(false).notNull(),
+    emailVerificationExpires: timestamp('email_verification_expires').default(sql`now() + interval '1 day'`),
 
     password: varchar('password', { length: 66 }),
 
