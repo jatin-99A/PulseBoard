@@ -49,6 +49,8 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
         return next();
     }
 
+    await TokenService.revokeRefreshToken(refreshToken as string);
+
     // 3. Generate new access token
     const accessToken = TokenService.generatePayloadToken(
         {
@@ -80,14 +82,14 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
     res.cookie("accessToken", accessToken, {
         httpOnly: true,
         secure: env.NODE_ENV === "production",
-        sameSite: "strict",
+        sameSite: "lax",
         maxAge: 15 * 60 * 1000,
     });
 
     res.cookie("refreshToken", refreshTokenObj.token, {
         httpOnly: true,
         secure: env.NODE_ENV === "production",
-        sameSite: "strict",
+        sameSite: "lax",
         maxAge:
             Number(env.REFRESH_EXPIRES_DAYS) * 24 * 60 * 60 * 1000,
     });

@@ -73,7 +73,7 @@ const signinService = async (data: {
         cookieOptions: {
             httpOnly: true,
             secure: env.NODE_ENV === "production",
-            sameSite: "strict" as const,
+            sameSite: "lax" as const,
         },
         maxAgeofRefreshToken: Number(env.REFRESH_EXPIRES_DAYS) * 24 * 60 * 60 * 1000,
     };

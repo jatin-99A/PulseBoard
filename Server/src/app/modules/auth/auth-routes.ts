@@ -21,6 +21,11 @@ router.post(
 );
 
 router.post(
+    "/signout",
+    catchAsync(authenticationController.handleSignout.bind(authenticationController))
+);
+
+router.post(
     "/me",
     protectedRoute,
     catchAsync(authenticationController.getMe.bind(authenticationController))

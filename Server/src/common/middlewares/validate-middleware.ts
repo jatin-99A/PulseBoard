@@ -4,13 +4,17 @@ import ApiError from '../utils/api-error.js';
 
 export default function validate(dtoClass: typeof DtoBase) {
   return (req: Request, res: Response, next: NextFunction) => {
-    const { error, data } = dtoClass.validate(req.body);
+    try {
+      const { error, data } = dtoClass.validate(req.body);
 
-    if (error) {
-      return next(ApiError.badRequest(error));
+      if (error) {
+        return next(ApiError.badRequest(error));
+      }
+
+      req.body = data;
+      next();
+    } catch (error) {
+      return next(ApiError.internalError(error as string));
     }
-
-    req.body = data;
-    next();
   };
 }
