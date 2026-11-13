@@ -2,9 +2,13 @@ import React, { useState } from 'react';
 import { BrandLogo } from '../components/common/BrandLogo';
 import { Button } from '../components/common/Button';
 import { useAuth } from '../context/AuthContext';
-import { LogOut, User as UserIcon, Shield, Sparkles, Plus, BarChart2, Radio } from 'lucide-react';
+import { LogOut, User as UserIcon, Shield, Sparkles, Plus, BarChart2, Radio, Home } from 'lucide-react';
 
-export const DashboardPage: React.FC = () => {
+interface DashboardPageProps {
+  onNavigateHome?: () => void;
+}
+
+export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigateHome }) => {
   const { user, signout } = useAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -21,14 +25,27 @@ export const DashboardPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#07090e] text-slate-100 flex flex-col">
-      {/* Top Navigation */}
       <header className="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <BrandLogo size="sm" />
+          <div className="flex items-center gap-6">
+            <button onClick={onNavigateHome} className="hover:opacity-90 transition-opacity">
+              <BrandLogo size="sm" />
+            </button>
+            {onNavigateHome && (
+              <button
+                type="button"
+                onClick={onNavigateHome}
+                className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
+              >
+                <Home className="w-3.5 h-3.5" />
+                <span>Explore Landing Page</span>
+              </button>
+            )}
+          </div>
 
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-3 bg-slate-800/50 border border-slate-700/50 px-3 py-1.5 rounded-full">
-              <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-indigo-500 to-violet-500 flex items-center justify-center text-xs font-bold text-white shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5 bg-slate-800/50 border border-slate-700/50 px-3 py-1.5 rounded-full">
+              <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-indigo-500 to-violet-500 flex items-center justify-center text-[11px] font-bold text-white shadow-sm">
                 {initials}
               </div>
               <span className="text-xs font-medium text-slate-200 hidden sm:inline">
@@ -50,9 +67,7 @@ export const DashboardPage: React.FC = () => {
         </div>
       </header>
 
-      {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        {/* Welcome Banner */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-950/60 via-slate-900/80 to-purple-950/40 border border-indigo-900/40 p-6 sm:p-8 backdrop-blur-xl shadow-xl">
           <div className="relative z-10 max-w-2xl space-y-3">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs font-semibold">
@@ -87,9 +102,7 @@ export const DashboardPage: React.FC = () => {
           </div>
         </div>
 
-        {/* User Profile & Account Details Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* User Profile Card */}
           <div className="lg:col-span-1 rounded-2xl bg-slate-900/70 border border-slate-800 p-6 space-y-6">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-600 flex items-center justify-center text-xl font-bold text-white shadow-lg shadow-indigo-600/30">
@@ -128,7 +141,6 @@ export const DashboardPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Quick Metrics & System Status */}
           <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="rounded-2xl bg-slate-900/60 border border-slate-800 p-5 flex flex-col justify-between">
               <div className="flex items-center justify-between text-slate-400">
@@ -168,4 +180,3 @@ export const DashboardPage: React.FC = () => {
     </div>
   );
 };
-

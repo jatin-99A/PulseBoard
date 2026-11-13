@@ -1,11 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { HomePage } from './pages/HomePage';
 import { AuthPage } from './pages/AuthPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { Activity } from 'lucide-react';
 
+type PageView = 'home' | 'auth' | 'dashboard';
+
 const AppContent: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
+  const [currentPage, setCurrentPage] = useState<PageView>('home');
+  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
 
   if (isLoading) {
     return (
@@ -20,7 +25,49 @@ const AppContent: React.FC = () => {
     );
   }
 
-  return isAuthenticated ? <DashboardPage /> : <AuthPage />;
+  const navigateToAuth = (mode: 'signin' | 'signup' = 'signin') => {
+    setAuthMode(mode);
+    setCurrentPage('auth');
+  };
+
+  const navigateToDashboard = () => {
+    setCurrentPage('dashboard');
+  };
+
+  const navigateToHome = () => {
+    setCurrentPage('home');
+  };
+
+  if (currentPage === 'dashboard') {
+    return isAuthenticated ? (
+      <DashboardPage onNavigateHome={navigateToHome} />
+    ) : (
+      <AuthPage
+        initialMode="signin"
+        onBackToHome={navigateToHome}
+        onSuccess={() => setCurrentPage('dashboard')}
+      />
+    );
+  }
+
+  if (currentPage === 'auth') {
+    return isAuthenticated ? (
+      <DashboardPage onNavigateHome={navigateToHome} />
+    ) : (
+      <AuthPage
+        initialMode={authMode}
+        onBackToHome={navigateToHome}
+        onSuccess={() => setCurrentPage('dashboard')}
+      />
+    );
+  }
+
+  return (
+    <HomePage
+      onNavigateAuth={navigateToAuth}
+      onNavigateDashboard={navigateToDashboard}
+    />
+  );
 };
 
 export const App: React.FC = () => {
@@ -32,4 +79,3 @@ export const App: React.FC = () => {
 };
 
 export default App;
-

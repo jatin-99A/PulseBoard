@@ -2,23 +2,41 @@ import React, { useState } from 'react';
 import { BrandLogo } from '../components/common/BrandLogo';
 import { SigninForm } from '../components/auth/SigninForm';
 import { SignupForm } from '../components/auth/SignupForm';
-import { ShieldCheck, BarChart3, Zap, Users2 } from 'lucide-react';
+import { ShieldCheck, BarChart3, Zap, Users2, ArrowLeft } from 'lucide-react';
 
 interface AuthPageProps {
   initialMode?: 'signin' | 'signup';
+  onBackToHome?: () => void;
+  onSuccess?: () => void;
 }
 
-export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'signin' }) => {
+export const AuthPage: React.FC<AuthPageProps> = ({
+  initialMode = 'signin',
+  onBackToHome,
+  onSuccess,
+}) => {
   const [mode, setMode] = useState<'signin' | 'signup'>(initialMode);
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-[#07090e] bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(99,102,241,0.15),rgba(255,255,255,0))] p-4 sm:p-6 lg:p-8 relative overflow-hidden">
-      {/* Decorative ambient background lights */}
+      {/* Ambient background glows */}
       <div className="absolute top-1/4 -left-32 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-violet-600/10 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
-        {/* Left Branding & Highlights Column (Hidden on mobile/tablet, visible on lg) */}
+      {/* Back to Home Button */}
+      {onBackToHome && (
+        <button
+          type="button"
+          onClick={onBackToHome}
+          className="absolute top-6 left-6 z-20 inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-white bg-slate-900/80 hover:bg-slate-800 border border-slate-800 px-3.5 py-2 rounded-xl transition-all shadow-sm backdrop-blur-md"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to Home</span>
+        </button>
+      )}
+
+      <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10 pt-10 sm:pt-0">
+        {/* Left Branding Column */}
         <div className="hidden lg:flex lg:col-span-6 flex-col justify-between space-y-8 pr-6">
           <div className="space-y-6">
             <BrandLogo size="lg" />
@@ -74,13 +92,11 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'signin' }) =>
 
         {/* Right Form Card Column */}
         <div className="lg:col-span-6 w-full max-w-md mx-auto">
-          {/* Mobile Brand Header */}
           <div className="lg:hidden flex justify-center mb-6">
             <BrandLogo size="md" />
           </div>
 
           <div className="rounded-2xl bg-slate-900/80 border border-slate-800/90 shadow-2xl shadow-black/80 backdrop-blur-xl p-6 sm:p-8">
-            {/* Tab switch control */}
             <div className="flex p-1 bg-slate-950/70 rounded-xl border border-slate-800/70 mb-6">
               <button
                 type="button"
@@ -106,15 +122,19 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'signin' }) =>
               </button>
             </div>
 
-            {/* Active Form */}
             {mode === 'signin' ? (
-              <SigninForm onSwitchToSignup={() => setMode('signup')} />
+              <SigninForm
+                onSwitchToSignup={() => setMode('signup')}
+                onSuccess={onSuccess}
+              />
             ) : (
-              <SignupForm onSwitchToSignin={() => setMode('signin')} />
+              <SignupForm
+                onSwitchToSignin={() => setMode('signin')}
+                onSuccess={onSuccess}
+              />
             )}
           </div>
 
-          {/* Bottom Security / Trust Footer */}
           <div className="mt-6 flex items-center justify-center gap-2 text-[11px] text-slate-500 text-center">
             <ShieldCheck className="w-3.5 h-3.5 text-indigo-400" />
             <span>Protected by PulseBoard Secure Auth &bull; Strict Cookies</span>
@@ -124,4 +144,3 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode = 'signin' }) =>
     </div>
   );
 };
-
