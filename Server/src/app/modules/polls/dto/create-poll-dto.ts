@@ -45,11 +45,6 @@ const createPollSchema = z.object({
     .max(1000, "Description must be at most 1000 characters")
     .optional(),
 
-  publicLink: z
-    .string({ message: "Public link must be a string" })
-    .min(3, "Public link must be at least 3 characters")
-    .max(255, "Public link must be at most 255 characters"),
-
   expiryDays: z
     .number({ message: "Expiry days must be a number" })
     .int("Expiry days must be an integer")

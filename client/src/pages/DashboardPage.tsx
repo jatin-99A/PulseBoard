@@ -1,8 +1,17 @@
-import React, { useState } from 'react';
-import { BrandLogo } from '../components/common/BrandLogo';
-import { Button } from '../components/common/Button';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { LogOut, User as UserIcon, Shield, Sparkles, Plus, BarChart2, Radio, Home } from 'lucide-react';
+import { DashboardHeader } from '../components/polls/DashboardHeader';
+import { PollStatsOverview } from '../components/polls/PollStatsOverview';
+import { PollList } from '../components/polls/PollList';
+import { CreatePollModal } from '../components/polls/CreatePollModal';
+import { PollDetailsModal } from '../components/polls/PollDetailsModal';
+import { PollAnalysisModal } from '../components/polls/PollAnalysisModal';
+import { DeletePollDialog } from '../components/polls/DeletePollDialog';
+import { Toast } from '../components/common/Toast';
+import { Button } from '../components/common/Button';
+import { Plus, Sparkles } from 'lucide-react';
+import { pollsApi } from '../api/polls-api';
+import type { Poll } from '../types/polls';
 
 interface DashboardPageProps {
   onNavigateHome?: () => void;
@@ -10,7 +19,32 @@ interface DashboardPageProps {
 
 export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigateHome }) => {
   const { user, signout } = useAuth();
+  const [polls, setPolls] = useState<Poll[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [detailsPoll, setDetailsPoll] = useState<Poll | null>(null);
+  const [analysisPoll, setAnalysisPoll] = useState<Poll | null>(null);
+  const [deletePoll, setDeletePoll] = useState<Poll | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const fetchPolls = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const response = await pollsApi.getAllPolls();
+      if (response.data) setPolls(response.data);
+    } catch {
+      // Handled silently or empty state
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchPolls();
+  }, [fetchPolls]);
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -21,162 +55,125 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigateHome }) 
     }
   };
 
-  const initials = `${user?.firstName?.[0] || 'U'}${user?.lastName?.[0] || ''}`.toUpperCase();
+  const handleViewDetails = async (poll: Poll) => {
+    setDetailsPoll(poll);
+    try {
+      const res = await pollsApi.getSinglePoll(poll.id);
+      if (res.data) setDetailsPoll(res.data);
+    } catch {
+      // Fallback to already present data
+    }
+  };
+
+  const handleCreateSuccess = (newPoll: Poll) => {
+    setIsCreateOpen(false);
+    setPolls((prev) => [newPoll, ...prev]);
+    setToastMessage(`Poll "${newPoll.title}" launched successfully!`);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deletePoll) return;
+    setIsDeleting(true);
+    try {
+      await pollsApi.deletePoll(deletePoll.id);
+      setPolls((prev) => prev.filter((p) => p.id !== deletePoll.id));
+      setDeletePoll(null);
+      setToastMessage('Poll deleted successfully.');
+    } catch {
+      setToastMessage('Failed to delete poll. Please try again.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-[#07090e] text-slate-100 flex flex-col">
-      <header className="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <button onClick={onNavigateHome} className="hover:opacity-90 transition-opacity">
-              <BrandLogo size="sm" />
-            </button>
-            {onNavigateHome && (
-              <button
-                type="button"
-                onClick={onNavigateHome}
-                className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
-              >
-                <Home className="w-3.5 h-3.5" />
-                <span>Explore Landing Page</span>
-              </button>
-            )}
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2.5 bg-slate-800/50 border border-slate-700/50 px-3 py-1.5 rounded-full">
-              <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-indigo-500 to-violet-500 flex items-center justify-center text-[11px] font-bold text-white shadow-sm">
-                {initials}
-              </div>
-              <span className="text-xs font-medium text-slate-200 hidden sm:inline">
-                {user?.firstName} {user?.lastName}
-              </span>
-            </div>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleLogout}
-              isLoading={isLoggingOut}
-              leftIcon={<LogOut className="w-3.5 h-3.5" />}
-              className="text-slate-300 hover:text-white border-slate-700 hover:border-slate-600"
-            >
-              Sign Out
-            </Button>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-[#07090e] text-slate-100 flex flex-col selection:bg-indigo-500 selection:text-white">
+      <DashboardHeader
+        user={user}
+        onNavigateHome={onNavigateHome}
+        onLogout={handleLogout}
+        isLoggingOut={isLoggingOut}
+      />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-950/60 via-slate-900/80 to-purple-950/40 border border-indigo-900/40 p-6 sm:p-8 backdrop-blur-xl shadow-xl">
-          <div className="relative z-10 max-w-2xl space-y-3">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-950/60 via-slate-900/80 to-purple-950/40 border border-indigo-900/40 p-6 sm:p-8 backdrop-blur-xl shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+          <div className="space-y-2 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs font-semibold">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Authentication Verified</span>
+              <span>Realtime Polls Dashboard</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
               Welcome back, {user?.firstName}! 👋
             </h1>
-            <p className="text-sm text-slate-300 leading-relaxed">
-              You are signed into PulseBoard. Your session tokens are active and secured with HttpOnly cookies.
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Create, manage, and analyze your real-time audience polls and live voting sessions.
             </p>
           </div>
 
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Button
-              variant="primary"
-              size="md"
-              leftIcon={<Plus className="w-4 h-4" />}
-              onClick={() => alert('Poll creation feature can be connected to /api/v1/polls')}
-            >
-              Create New Poll
-            </Button>
-            <Button
-              variant="secondary"
-              size="md"
-              leftIcon={<Radio className="w-4 h-4 text-emerald-400" />}
-              onClick={() => alert('Live rooms view')}
-            >
-              Explore Live Polls
-            </Button>
-          </div>
+          <Button
+            variant="primary"
+            size="md"
+            onClick={() => setIsCreateOpen(true)}
+            leftIcon={<Plus className="w-4 h-4" />}
+            className="shrink-0 font-semibold shadow-indigo-600/30"
+          >
+            Create New Poll
+          </Button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-1 rounded-2xl bg-slate-900/70 border border-slate-800 p-6 space-y-6">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-600 flex items-center justify-center text-xl font-bold text-white shadow-lg shadow-indigo-600/30">
-                {initials}
-              </div>
-              <div>
-                <h3 className="font-bold text-base text-white">
-                  {user?.firstName} {user?.lastName}
-                </h3>
-                <p className="text-xs text-slate-400 break-all">{user?.email}</p>
-                <div className="inline-flex items-center gap-1.5 mt-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[11px] font-semibold">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  Active Account
-                </div>
-              </div>
-            </div>
+        <PollStatsOverview polls={polls} />
 
-            <div className="border-t border-slate-800/80 pt-4 space-y-3 text-xs">
-              <div className="flex justify-between py-1 border-b border-slate-800/40">
-                <span className="text-slate-400">User ID</span>
-                <span className="text-slate-200 font-mono text-[11px] truncate max-w-[170px]" title={user?.id}>
-                  {user?.id}
-                </span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-slate-800/40">
-                <span className="text-slate-400">Security Mode</span>
-                <span className="text-indigo-400 font-medium flex items-center gap-1">
-                  <Shield className="w-3 h-3" />
-                  JWT + Refresh Cookie
-                </span>
-              </div>
-              <div className="flex justify-between py-1">
-                <span className="text-slate-400">Role</span>
-                <span className="text-slate-200 font-medium">Poll Administrator</span>
-              </div>
-            </div>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
+            <h2 className="text-base font-bold text-white tracking-tight">Your Polls</h2>
+            <span className="text-xs font-semibold text-slate-400">
+              {polls.length} {polls.length === 1 ? 'poll' : 'polls'} total
+            </span>
           </div>
 
-          <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="rounded-2xl bg-slate-900/60 border border-slate-800 p-5 flex flex-col justify-between">
-              <div className="flex items-center justify-between text-slate-400">
-                <span className="text-xs font-semibold uppercase tracking-wider">Active Polls</span>
-                <BarChart2 className="w-4 h-4 text-indigo-400" />
-              </div>
-              <div className="mt-4">
-                <div className="text-3xl font-extrabold text-white">0</div>
-                <p className="text-xs text-slate-400 mt-1">Ready to create your first realtime audience poll</p>
-              </div>
-            </div>
-
-            <div className="rounded-2xl bg-slate-900/60 border border-slate-800 p-5 flex flex-col justify-between">
-              <div className="flex items-center justify-between text-slate-400">
-                <span className="text-xs font-semibold uppercase tracking-wider">Audience Votes</span>
-                <UserIcon className="w-4 h-4 text-violet-400" />
-              </div>
-              <div className="mt-4">
-                <div className="text-3xl font-extrabold text-white">0</div>
-                <p className="text-xs text-slate-400 mt-1">Realtime participation updates automatically</p>
-              </div>
-            </div>
-
-            <div className="sm:col-span-2 rounded-2xl bg-slate-900/40 border border-slate-800/60 p-5 flex items-center justify-between">
-              <div>
-                <h4 className="text-sm font-semibold text-slate-200">Backend Connection</h4>
-                <p className="text-xs text-slate-400 mt-0.5">Connected to PulseBoard Express API at port 8002</p>
-              </div>
-              <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-medium">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                Live
-              </div>
-            </div>
-          </div>
+          <PollList
+            polls={polls}
+            isLoading={isLoading}
+            onCreatePoll={() => setIsCreateOpen(true)}
+            onViewDetails={handleViewDetails}
+            onViewAnalysis={(poll) => setAnalysisPoll(poll)}
+            onDelete={(poll) => setDeletePoll(poll)}
+            onCopyLink={() => setToastMessage('Public poll link copied to clipboard!')}
+          />
         </div>
       </main>
+
+      <CreatePollModal
+        isOpen={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
+        onSuccess={handleCreateSuccess}
+      />
+
+      <PollDetailsModal
+        poll={detailsPoll}
+        isOpen={!!detailsPoll}
+        onClose={() => setDetailsPoll(null)}
+        onOpenAnalysis={(poll) => setAnalysisPoll(poll)}
+        onCopyLink={() => setToastMessage('Public poll link copied to clipboard!')}
+      />
+
+      <PollAnalysisModal
+        poll={analysisPoll}
+        isOpen={!!analysisPoll}
+        onClose={() => setAnalysisPoll(null)}
+      />
+
+      <DeletePollDialog
+        poll={deletePoll}
+        isOpen={!!deletePoll}
+        isLoading={isDeleting}
+        onClose={() => setDeletePoll(null)}
+        onConfirm={handleDeleteConfirm}
+      />
+
+      {toastMessage && (
+        <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
+      )}
     </div>
   );
 };

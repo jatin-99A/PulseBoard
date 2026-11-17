@@ -1,7 +1,13 @@
-import { drizzle } from 'drizzle-orm/neon-http';
+import { drizzle } from 'drizzle-orm/neon-serverless';
+import { Pool, neonConfig } from '@neondatabase/serverless';
+import ws from 'ws';
 import env from '../config/env.js';
 
-const db = drizzle(env.DATABASE_URL);
+// Required for Node.js environments that lack a native global WebSocket
+neonConfig.webSocketConstructor = ws;
+
+const pool = new Pool({ connectionString: env.DATABASE_URL });
+const db = drizzle(pool);
 
 export async function testDbConnection() {
   try {

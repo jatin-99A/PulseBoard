@@ -4,6 +4,9 @@ import { questionsTable } from "../../../../db/questions-schema.js";
 import { optionsTable } from "../../../../db/options-schema.js";
 import ApiError from "../../../../common/utils/api-error.js";
 import type { CreatePollDtoType } from "../dto/create-poll-dto.js";
+import { randomUUID } from "crypto";
+
+const publicLink = randomUUID();
 
 interface CreatePollPayload extends CreatePollDtoType {
     creatorId: string;
@@ -20,7 +23,7 @@ const createPollService = async (payload: CreatePollPayload) => {
                     creatorId: payload.creatorId,
                     title: payload.title,
                     description: payload.description,
-                    publicLink: payload.publicLink,
+                    publicLink,
                     expiryDays: payload.expiryDays,
                     expiresAt: new Date(
                         Date.now() + payload.expiryDays * 24 * 60 * 60 * 1000

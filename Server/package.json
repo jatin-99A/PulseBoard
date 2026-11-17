@@ -34,6 +34,7 @@
     "socket.io": "^4.8.3",
     "tsc-watch": "^7.2.0",
     "typescript": "^6.0.3",
+    "ws": "^8.23.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -43,6 +44,7 @@
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.6.2",
+    "@types/ws": "^8.18.2",
     "drizzle-kit": "^0.31.10",
     "prettier": "^3.8.3",
     "tsx": "^4.21.0"
