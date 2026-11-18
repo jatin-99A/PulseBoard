@@ -7,6 +7,8 @@ import { catchAsync } from '../common/utils/catch-async-error.js';
 import authRoutes from './modules/auth/auth-routes.js';
 import pollRoutes from './modules/polls/poll-routes.js';
 import cookieParser from "cookie-parser";
+import { Server } from 'socket.io';
+import authSocketMiddleware from '../common/middlewares/auth-socket-middleware.js';
 
 // Extend Express Request interface to include user property
 declare global {
@@ -19,6 +21,15 @@ declare global {
     }
   }
 }
+
+export const io = new Server({
+  cors: {
+    origin: env.ALLOWED_ORIGINS.split(",").map(o => o.trim()),
+    credentials: true,
+    methods: ["GET", "POST"]
+  }
+});
+io.use(authSocketMiddleware);
 
 // Function to setup the Express app
 export function setupApp() {

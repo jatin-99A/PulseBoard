@@ -27,6 +27,22 @@ export const pollsApi = {
     const res = await apiClient.get<ApiResponse<PollAnalysis>>(`/polls/${id}/analysis`);
     return res.data;
   },
+
+  getLivePoll: async (publicLink: string): Promise<ApiResponse<Poll & { hasVoted?: boolean }>> => {
+    const res = await apiClient.get<ApiResponse<Poll & { hasVoted?: boolean }>>(`/polls/live/${publicLink}`);
+    return res.data;
+  },
+
+  submitPollResponse: async (
+    publicLink: string,
+    answers: { questionId: string; selectedOptionId: string }[]
+  ): Promise<ApiResponse<{ success: boolean; message: string }>> => {
+    const res = await apiClient.post<ApiResponse<{ success: boolean; message: string }>>(
+      `/polls/live/${publicLink}/response`,
+      { answers }
+    );
+    return res.data;
+  },
 };
 
 export default pollsApi;

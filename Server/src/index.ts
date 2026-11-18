@@ -1,7 +1,8 @@
 import { createServer } from 'node:http';
-import { setupApp } from './app/index.js';
+import { io, setupApp } from './app/index.js';
 import env from './config/env.js';
 import { testDbConnection } from './db/index.js';
+import { registerPollSocket } from './app/modules/polls/poll-socket.js';
 
 // workers
 import './workers/cleanup-job.js';
@@ -13,6 +14,9 @@ async function startServer() {
     await testDbConnection();
 
     const server = createServer(setupApp());
+    io.attach(server);
+
+    registerPollSocket(io);
 
     server.listen(PORT, () => {
       console.log(`Server is running on port ${env.API_URL}:${PORT}`);
